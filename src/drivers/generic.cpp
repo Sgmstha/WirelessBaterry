@@ -70,6 +70,7 @@ DeviceKind KindFromCategory(const std::wstring& c) {
 //    krisgfx9/Wireless-Device-Battery-Monitor#168. Its USB ids are 3151:4011 / 4015 (OpenRGB issue 4074).
 DeviceKind KindFromBleIds(USHORT vid, USHORT pid) {
     if (vid == 0x3151 && pid == 0x4013) return DeviceKind::Keyboard;
+    if (vid == 0x0C45 && pid == 0xFEFE) return DeviceKind::Keyboard;
     return DeviceKind::Other;
 }
 
@@ -232,7 +233,16 @@ void PollBluetooth(PollContext& ctx) {
     for (const auto& c : ctx.colls) {
         std::wstring cont = HidContainer(c.path);
         hidIds[cont] = { c.vid, c.pid };
-        if (ctx.IsClaimed(c.vid, c.pid)) reported.insert(cont);
+        bool isBt = (c.path.find(L"bth") != std::wstring::npos || c.path.find(L"BTH") != std::wstring::npos ||
+                     c.path.find(L"{00001812-") != std::wstring::npos);
+        if (isBt && ctx.IsClaimed(c.vid, c.pid)) {
+            for (const auto& o : ctx.out) {
+                if (o.via == L"Bluetooth") {
+                    reported.insert(cont);
+                    break;
+                }
+            }
+        }
     }
 
     for (auto& [cid, f] : battery) {
@@ -250,18 +260,21 @@ void PollBluetooth(PollContext& ctx) {
         if (dup) continue;
         s.via = L"Bluetooth";
         s.percent = f.pct;
-        auto cod = containerCod.find(cid);
-        s.kind = cod != containerCod.end() ? KindFromClassOfDevice(cod->second) : DeviceKind::Other;
-        if (s.kind == DeviceKind::Other) {
-            auto cat = containerCat.find(cid);
-            if (cat != containerCat.end()) s.kind = KindFromCategory(cat->second);
-        }
-        // Bluetooth LE devices have no class of device; their HID collections tell a mouse from a keyboard.
         auto ids = hidIds.find(cid);
         if (ids != hidIds.end()) s.vid = ids->second.first;
-        if (s.kind == DeviceKind::Other && ids != hidIds.end()) s.kind = KindFromBleIds(ids->second.first, ids->second.second);
-        if (s.kind == DeviceKind::Other && ids != hidIds.end()) s.kind = KindFromCollections(ctx.colls, ids->second.first, ids->second.second);
-        if (s.kind == DeviceKind::Other) s.kind = GuessKind(s.name);
+        DeviceKind named = GuessKind(s.name);
+        if (named != DeviceKind::Other) {
+            s.kind = named;
+        } else {
+            auto cod = containerCod.find(cid);
+            s.kind = cod != containerCod.end() ? KindFromClassOfDevice(cod->second) : DeviceKind::Other;
+            if (s.kind == DeviceKind::Other) {
+                auto cat = containerCat.find(cid);
+                if (cat != containerCat.end()) s.kind = KindFromCategory(cat->second);
+            }
+            if (s.kind == DeviceKind::Other && ids != hidIds.end()) s.kind = KindFromBleIds(ids->second.first, ids->second.second);
+            if (s.kind == DeviceKind::Other && ids != hidIds.end()) s.kind = KindFromCollections(ctx.colls, ids->second.first, ids->second.second);
+        }
         ctx.out.push_back(s);
         ctx.btContainers.insert(cid);
     }

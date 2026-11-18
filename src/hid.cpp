@@ -230,12 +230,12 @@ DeviceKind GuessKind(const std::wstring& name) {
     std::wstring n = name;
     for (auto& ch : n) ch = towlower(ch);
     auto has = [&](const wchar_t* s) { return n.find(s) != std::wstring::npos; };
-    if (has(L"mouse") || has(L"mice") || has(L"trackball")) return DeviceKind::Mouse;
-    if (has(L"keyboard") || has(L"keys")) return DeviceKind::Keyboard;
+    if (has(L"mouse") || has(L"mice") || has(L"trackball") || has(L"tanto") || has(L"wg13")) return DeviceKind::Mouse;
+    if (has(L"keyboard") || has(L"keys") || has(L"atom") || has(L"he68")) return DeviceKind::Keyboard;
     if (has(L"controller") || has(L"gamepad") || has(L"xbox") || has(L"dualsense") || has(L"dualshock") || has(L"joy-con"))
         return DeviceKind::Gamepad;
     if (has(L"head") || has(L"buds") || has(L"pods") || has(L"ear") || has(L"wh-") || has(L"wf-") || has(L"audio") ||
-        has(L"speaker") || has(L"arctis") || has(L"cloud") || has(L"void") || has(L"virtuoso"))
+        has(L"speaker") || has(L"arctis") || has(L"cloud") || has(L"void") || has(L"virtuoso") || has(L"stellar") || has(L"whg05"))
         return DeviceKind::Headset;
     return DeviceKind::Other;
 }
@@ -248,9 +248,9 @@ DeviceKind KindFromCollections(const std::vector<HidColl>& all, USHORT vid, USHO
         pad |= c.usage() == 0x04 || c.usage() == 0x05;
         kbd |= c.usage() == 0x06;
     }
+    if (kbd) return DeviceKind::Keyboard;
     if (mouse) return DeviceKind::Mouse;
     if (pad) return DeviceKind::Gamepad;
-    if (kbd) return DeviceKind::Keyboard;
     return DeviceKind::Other;
 }
 

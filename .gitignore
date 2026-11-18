@@ -6,3 +6,11 @@ dist/
 third_party/
 .claude/
 CLAUDE.md
+
+docs/decisions.md
+docs/flow.md
+bin/
+__pycache__/
+*.zip
+dump.txt
+list.txt

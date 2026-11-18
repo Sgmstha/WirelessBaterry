@@ -22,6 +22,10 @@ using ABI::Windows::System::Power::BatteryStatus;
 #include <windows.devices.power.h>
 #include <windows.gaming.input.h>
 
+#ifdef _MSC_VER
+typedef ABI::Windows::Foundation::IReference<INT32> __FIReference_1_INT32;
+#endif
+
 namespace {
 
 using namespace ABI::Windows::Gaming::Input;

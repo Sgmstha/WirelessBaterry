@@ -147,4 +147,19 @@ void PollFantech(PollContext& ctx) {
         ctx.Add(s, vid, pid);
         break;
     }
+
+    for (auto [vid, pid] : ctx.Products(0x3654)) {
+        if (pid != 0x4255) continue;
+        std::vector<const HidColl*> all = ctx.Find(vid, pid, [](const HidColl&) { return true; });
+        if (all.empty()) continue;
+        DeviceStatus s;
+        s.key = L"fantech:stellar:" + Hex4(pid);
+        s.name = L"Fantech Stellar WHG05";
+        s.kind = DeviceKind::Headset;
+        s.via = L"2.4 GHz receiver";
+        s.connected = true;
+        s.graceSec = 1800;
+        ctx.Add(s, vid, pid);
+        break;
+    }
 }

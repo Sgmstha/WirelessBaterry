@@ -1,13 +1,38 @@
-# Wireless Battery
+# Wireless Battery (Fantech Enhanced Edition)
 
-[![Support me on Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20me-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/krisgfx)
-[![Donate with PayPal](https://img.shields.io/badge/PayPal-Donate-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/krisgfx)
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/krisgfx9)
-[![Join our Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/ZgDDUPP8ye)
-[![Star on GitHub](https://img.shields.io/github/stars/krisgfx9/Wireless-Device-Battery-Monitor?style=flat&logo=github&label=Star)](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor)
-[![Share on Reddit](https://img.shields.io/badge/Reddit-Share-FF4500?logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fkrisgfx9%2FWireless-Device-Battery-Monitor&title=Wireless%20Battery%3A%20battery%20levels%20of%20your%20wireless%20devices%20on%20the%20Windows%20taskbar)
-[![Report a device](https://img.shields.io/badge/Report-a%20device-2EA44F?logo=github&logoColor=white)](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor/issues/new)
-[![Help translate](https://img.shields.io/badge/Help-translate-6F42C1?logo=googletranslate&logoColor=white)](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor/pull/129)
+> [!NOTE]
+> **Fork Notice & Acknowledgement:**
+> This repository is a fork of the amazing [Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor) created by **[krisgfx9](https://github.com/krisgfx9)**.
+> All core architecture, tray and widget UI, reverse engineering, and foundational drivers are the work of **krisgfx9** and its open-source contributors. Please consider supporting and starring the [original upstream repository](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor)!
+
+---
+
+## ⚡ What's Added in this Fork?
+
+This fork was created to add full support for **Fantech wireless peripherals**, fix glyph classification for multi-mode gaming keyboards, and provide a 1-click native Windows MSVC build script:
+
+### 1. Fantech Peripheral Support
+* **Fantech Atom HE68 PRO Keyboard**:
+  * **2.4 GHz Receiver**: Communicates over SONiX vendor protocol (`0C45:FEFE` on `0xFF60:0061` and `0xFF59:0061`) for live battery telemetry.
+  * **Bluetooth LE**: Automatic extraction of battery percentage from the Windows Bluetooth GATT Battery Service (`0000180F`).
+  * **Intelligent Multi-Mode Switching**: Resolved an issue where an idle 2.4 GHz USB dongle plugged into the PC would suppress the keyboard when switched to Bluetooth mode.
+* **Fantech Tanto S WG13S Mouse**:
+  * **2.4 GHz Receiver (`3151:402D`)**: Auto-identifies "Fantech Tanto S WG13S" via USB descriptor rather than generic vendor IDs.
+  * **Sleep State Retention**: Added a 30-minute grace period (`graceSec = 1800`) so the mouse battery level stays visible on your taskbar instead of disappearing when the mouse goes to sleep (`msOff == 1`).
+* **Fantech Stellar WHG05 Headset**:
+  * **2.4 GHz Receiver (`3654:4255`) & Bluetooth**: Full battery detection via HFP Hands-Free and GATT services.
+
+### 2. Official Fantech Brand Styling
+* Added official **Fantech Red (`#ED1C24`)** brand accent color with tailored dark and light taskbar glow themes (`src/brands.cpp`, `src/brands.h`).
+
+### 3. Multi-Function Keyboard Glyph Fix
+* Modern gaming keyboards with volume wheels, rotary knobs, or macro clicks expose secondary mouse collections (`usage 0x02`). This previously caused the keyboard to be misclassified with a mouse icon (🖱).
+* Updated collection priority and name heuristics so the **Atom HE68 PRO** accurately displays the Keyboard icon (⌨).
+
+### 4. Native MSVC Build System
+* Added [`build_msvc.bat`](build_msvc.bat) to compile natively with Visual Studio MSVC (`cl.exe`, `rc.exe`, `link.exe`) on 64-bit Windows without requiring MinGW or MSYS2.
+
+---
 
 Battery levels of your wireless mouse, headset, keyboard and controller, right on the Windows taskbar.
 
@@ -49,6 +74,7 @@ Hover for details. Click for the menu: every device (click one to hide or show i
 
 | Vendor | Devices | How |
 |---|---|---|
+| **Fantech** | **Atom HE68 PRO** keyboard (`0C45:FEFE` 2.4G dongle or Bluetooth LE), **Tanto S WG13S** mouse (`3151:402D` 2.4G dongle), **Stellar WHG05** headset (`3654:4255` 2.4G dongle or Bluetooth), Helios Go XD5 (`25A7:FA7B`/`FA7C`) | SONiX vendor protocol (`FF60:0061` / `FF59:0061`) on keyboard; Rongyuan feature report with 30-min sleep retention on mouse; Bluetooth GATT Battery Service & Hands-Free profiles |
 | **ASTRO** | A50 X (`046D:0B0B`, tested), A50 Gen 5 (`046D:0B1C`), A50 Gen 4 (`9886:002C` tested, `002D`/`002A`), A50 Gen 3 (`9886:0014`/`0015`/`0018`/`001D`/`0026`), A20 Wireless (`9886:0037`–`0045`), via USB base station | Battery percentage, charging and docked status |
 | **Logitech** | Mice and keyboards on Unifying, Bolt, Lightspeed (including the PRO X3 SUPERSTRIKE dongle `046D:C54F`) and Nano receivers, over USB or Bluetooth; G headsets (G533, G535, G633/G635/G733/G933/G935, G PRO/PRO X); G435 on the newer `046D:0ADF` dongle | HID++ 1.0 / 2.0 with feature discovery: unified battery, battery level, voltage, ADC; G435: CRC-16 framed vendor reports, `GET_BATTERY` in mV |
 | **Razer** | Wireless mice, keyboards and dongles; BlackShark V2 HyperSpeed, V2 Pro (2020/2023), V3 / V3 Pro / V3 X headsets; Barracuda X (2022) on its 2.4 GHz receiver (`1532:0550`); Barracuda Pro (`1532:053A`) | Razer feature-report protocol; BlackShark vendor protocols (V3 / V3 Pro / V3 X queried every 5 min); Barracuda X: Airoha battery and cable queries through the receiver |
@@ -199,9 +225,15 @@ the only place the app connects to the internet, and only when you click Send.
 
 ## Build
 
-You need [MinGW-w64](https://www.mingw-w64.org/), e.g. from [MSYS2](https://www.msys2.org/) (`pacman -S mingw-w64-x86_64-gcc make`).
-
+### Option 1: Microsoft Visual C++ (MSVC / Visual Studio)
+Run `build_msvc.bat` in a command prompt. It automatically discovers your Visual Studio installation (e.g., VS 2022/2026/Build Tools), initializes `vcvars64.bat`, compiles the Win32 resource file with `rc.exe`, and links `WirelessBattery.exe`:
+```cmd
+build_msvc.bat
 ```
+
+### Option 2: MinGW-w64 (MSYS2)
+You need [MinGW-w64](https://www.mingw-w64.org/), e.g. from [MSYS2](https://www.msys2.org/) (`pacman -S mingw-w64-x86_64-gcc make`):
+```cmd
 make            # MSYS2 / any shell with make
 build.bat       # plain cmd with g++ and windres on PATH
 ```

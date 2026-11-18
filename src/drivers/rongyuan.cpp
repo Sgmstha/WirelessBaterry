@@ -60,16 +60,27 @@ void PollRongyuan(PollContext& ctx) {
             // Slot layout: [2] keyboard %, [3] mouse %, [4] keyboard offline, [5] mouse offline.
             for (int slot = 0; slot < 2; slot++) {
                 bool keyboard = slot == 0;
-                if (r[keyboard ? 4 : 5] != 0) continue;  // nothing connected in this slot
+                bool offline = r[keyboard ? 4 : 5] != 0;
                 BYTE level = r[keyboard ? 2 : 3];
+                if (offline && (level < 1 || level > 100)) continue;  // nothing connected in this slot
                 DeviceStatus s;
                 s.key = L"rongyuan:" + Hex4(vid) + L":" + Hex4(pid) + (keyboard ? L":kb" : L":ms");
-                if (vid == 0x3151 && pid == 0x402D && !keyboard) s.name = L"Attack Shark R3";
+                if (vid == 0x3151 && pid == 0x402D && !keyboard) {
+                    if (product.find(L"Fantech") != std::wstring::npos || product.find(L"WG13") != std::wstring::npos || product.find(L"Tanto") != std::wstring::npos)
+                        s.name = L"Fantech Tanto S WG13S";
+                    else if (!generic)
+                        s.name = product;
+                    else
+                        s.name = L"Attack Shark R3";
+                }
                 else if (generic) s.name = keyboard ? L"Wireless keyboard" : L"Wireless mouse";
                 else s.name = product;
                 s.kind = keyboard ? DeviceKind::Keyboard : DeviceKind::Mouse;
                 s.via = L"2.4 GHz receiver";
                 if (level >= 1 && level <= 100) s.percent = level;
+                s.connected = true;
+                s.asleep = offline;
+                s.graceSec = 1800;
                 ctx.out.push_back(s);
                 any = true;
             }

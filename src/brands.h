@@ -6,7 +6,7 @@
 
 enum class Accent {
     None,
-    Razer, Logitech, SteelSeries, Corsair, HyperX, Rog, Zowie,
+    Razer, Logitech, SteelSeries, Corsair, HyperX, Rog, Zowie, Fantech,
     PlayStation, Xbox, Galaxy, Apple, Jabra, Jbl, CoolerMaster, Steam,
 };
 

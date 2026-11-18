@@ -16,6 +16,7 @@ const BrandStyle kBrands[] = {
     { Accent::HyperX,       L"HyperX",       { 232,  35,  63 }, { 200,  16,  46 } },  // #E31837
     { Accent::Rog,          L"ROG",          { 255,  46,  77 }, { 208,   0,  42 } },  // ROG red #FF0029
     { Accent::Zowie,        L"ZOWIE",        { 240,  60,  50 }, { 192,  32,  26 } },  // #E2231A
+    { Accent::Fantech,      L"Fantech",      { 237,  28,  36 }, { 190,  16,  24 } },  // Fantech red #ED1C24
     { Accent::PlayStation,  L"PlayStation",  {  31, 139, 255 }, {   0,  98, 196 } },  // #0070D1
     { Accent::Xbox,         L"Xbox",         {  34, 168,  34 }, {  16, 124,  16 } },  // #107C10
     { Accent::Galaxy,       L"Samsung",      {  91, 123, 255 }, {  20,  40, 160 } },  // #1428A0
@@ -53,6 +54,7 @@ const KeyRule kKeys[] = {
     { L"hyperx:", Accent::HyperX },
     { L"rog:", Accent::Rog },
     { L"zowie:", Accent::Zowie },
+    { L"fantech:", Accent::Fantech },
     { L"ps:", Accent::PlayStation }, { L"inzone:", Accent::PlayStation },
     { L"xbox:", Accent::Xbox }, { L"xinput:", Accent::Xbox },
     { L"galaxybuds:", Accent::Galaxy },
@@ -110,6 +112,9 @@ const NameRule kNames[] = {
     { L"jbl", How::Word, Accent::Jbl },
     { L"cooler master", How::Contains, Accent::CoolerMaster }, { L"coolermaster", How::Contains, Accent::CoolerMaster },
     { L"steam controller", How::Contains, Accent::Steam },
+    { L"fantech", How::Contains, Accent::Fantech }, { L"stellar", How::Word, Accent::Fantech },
+    { L"whg05", How::Contains, Accent::Fantech }, { L"tanto", How::Word, Accent::Fantech },
+    { L"wg13", How::Contains, Accent::Fantech }, { L"atom he68", How::Contains, Accent::Fantech },
 };
 
 bool Matches(const std::wstring& n, const NameRule& r) {

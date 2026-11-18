@@ -10,7 +10,7 @@ namespace {
 // Words that say nothing about which device it is: makers and generic product words (lower case).
 const wchar_t* const kSkip[] = {
     L"logitech", L"logi", L"razer", L"steelseries", L"corsair", L"hyperx", L"glorious", L"keychron", L"microsoft",
-    L"sony", L"asus", L"lamzu", L"pulsar", L"zowie", L"rapoo", L"wireless", L"gaming", L"mouse", L"headset",
+    L"sony", L"asus", L"lamzu", L"pulsar", L"zowie", L"rapoo", L"fantech", L"wireless", L"gaming", L"mouse", L"headset",
     L"headphones", L"keyboard", L"controller", L"gamepad", L"receiver", L"bluetooth", L"usb",
 };
 

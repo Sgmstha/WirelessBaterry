@@ -21,11 +21,11 @@ BYTE Sum(const std::vector<BYTE>& b, size_t from, size_t n) {
 }
 
 // Returns the level byte, or -1 when the dongle did not answer.
-int QueryLevel(HidDev& d) {
-    std::vector<BYTE> req(1 + kLen, 0);  // [0] = report id 0
+int QueryLevel(HidDev& d, size_t payloadLen = 32) {
+    std::vector<BYTE> req(1 + payloadLen, 0);  // [0] = report id 0
     req[1] = 0x20;
     req[2] = 0x01;
-    req[kLen] = Sum(req, 1, kLen - 1);
+    req[payloadLen] = Sum(req, 1, payloadLen - 1);
     d.Flush();
     if (!d.Write(req)) return -1;
     ULONGLONG end = GetTickCount64() + 500;
@@ -35,8 +35,9 @@ int QueryLevel(HidDev& d) {
         std::vector<BYTE> r;
         int n = d.Read(r, left);  // report id 0 is stripped: r[0] is the first payload byte
         if (n < 0) return -1;
-        if (n < (int)kLen || r[0] != 0x20 || r[1] != 0x01) continue;
-        if (r[kLen - 1] != Sum(r, 0, kLen - 1)) continue;
+        if (n < (int)payloadLen || r[0] != 0x20 || r[1] != 0x01) continue;
+        bool sumOk = (r[payloadLen - 1] == Sum(r, 0, payloadLen - 1)) || (r[payloadLen - 1] == 0);
+        if (!sumOk) continue;
         return r[3];
     }
 }
@@ -46,6 +47,8 @@ std::wstring KeyboardName(const HidColl& c) {
     const std::wstring suffix = L" 2.4G";
     if (name.size() > suffix.size() && name.compare(name.size() - suffix.size(), suffix.size(), suffix) == 0)
         name.resize(name.size() - suffix.size());
+    if (name.find(L"Atom") != std::wstring::npos || name.find(L"HE68") != std::wstring::npos)
+        return L"Fantech Atom HE68 PRO";
     return name.empty() ? L"Wireless keyboard" : name;
 }
 
@@ -55,22 +58,23 @@ void PollSonix(PollContext& ctx) {
     for (auto [vid, pid] : kDongles) {
         if (ctx.IsClaimed(vid, pid)) continue;
         for (const HidColl* c : ctx.Find(vid, pid, [](const HidColl& c) {
-                 return c.iface == 3 && c.page() == 0xFF60 && c.usage() == 0x0061 && c.outLen() == 1 + kLen &&
-                        c.inLen() == 1 + kLen;
+                 return (c.page() == 0xFF60 || c.page() == 0xFF59) && c.usage() == 0x0061 &&
+                        (c.outLen() == 33 || c.outLen() == 65) && c.outLen() == c.inLen();
              })) {
             HidDev d;
             if (!d.Open(*c)) continue;
+            size_t payloadLen = c->outLen() - 1;
             // The first request can go unanswered while the 2.4 GHz link wakes up; retry once.
-            int level = QueryLevel(d);
-            if (level < 0) level = QueryLevel(d);
-            if (level < 0) continue;
+            int level = QueryLevel(d, payloadLen);
+            if (level < 0) level = QueryLevel(d, payloadLen);
+            if (level < 1 || level > 100) continue;
             DeviceStatus s;
             s.key = L"sonix:" + Hex4(vid) + L":" + Hex4(pid);
             s.name = KeyboardName(*c);
             s.kind = DeviceKind::Keyboard;
             s.via = L"2.4 GHz receiver";
-            s.connected = level >= 1 && level <= 100;  // 0: keyboard off, out of range or in another mode
-            if (s.connected) s.percent = level;
+            s.connected = true;
+            s.percent = level;
             s.graceSec = 1800;  // keep the last value if a sleeping keyboard stops answering
             ctx.Add(s, vid, pid);
             break;
